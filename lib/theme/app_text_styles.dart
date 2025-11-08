@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
+// Define text styles used throughout the app
 class AppTextStyles {
   static TextStyle heading(double size) => GoogleFonts.poppins(
     fontSize: size,
@@ -34,5 +35,5 @@ class AppTextStyles {
     color: AppColors.muted,
   );
 
-  static TextTheme get textTheme => GoogleFonts.poppinsTextTheme();
+  static TextTheme get textTheme => GoogleFonts.poppinsTextTheme();// applies to entire app
 }

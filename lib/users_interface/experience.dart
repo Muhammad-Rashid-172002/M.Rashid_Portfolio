@@ -45,7 +45,7 @@ class ExperienceSection extends StatelessWidget {
     );
   }
 }
-
+// Individual experience card widget
 class _ExperienceCard extends StatelessWidget {
   final String role, company, duration, description;
   const _ExperienceCard({

@@ -11,18 +11,18 @@ class ProjectsSection extends StatelessWidget {
   // Replace these with your real asset image names
   static const List<Map<String, String>> _projects = [
     {
-      'title': 'Noor Diesel Engineering Website',
+      'title': 'Noor Diesel Engineering company Website',
       'subtitle': 'Company web app for Noor Diesel Engineering',
       'image': 'assets/noor_diesel.png',
       'desc':
           'A responsive company website with service pages, contact form, and admin panel for managing projects and employees.',
     },
     {
-      'title': 'Fiverr Client Web App',
+      'title': 'Fiverr Client App',
       'subtitle': 'Client project on Fiverr',
       'image': 'assets/projects/fiverr_client.png',
       'desc':
-          'Custom web dashboard and mobile landing created for a Fiverr client. Integrated payment links and analytics.',
+          'Custom expanse tracker web and mobile landing created for a Fiverr client. Integrated payment links and analytics.',
     },
     {
       'title': 'Artha App',

@@ -138,7 +138,7 @@ class AboutSection extends StatelessWidget {
       ],
     );
   }
-
+// profile card widget
   Widget _profileCard() {
     return SizedBox(
       width: 420,

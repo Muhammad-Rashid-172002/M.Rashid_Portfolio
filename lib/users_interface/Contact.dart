@@ -1,7 +1,8 @@
 // lib/sections/contact.dart
 import 'package:flutter/material.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_text_styles.dart';
+import 'package:m_rashid/theme/app_colors.dart';
+import 'package:m_rashid/theme/app_text_styles.dart';
+
 
 class ContactSection extends StatefulWidget {
   final GlobalKey<FormState> formKey;
