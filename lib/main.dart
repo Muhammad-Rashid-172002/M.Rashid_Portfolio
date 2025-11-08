@@ -1,122 +1,254 @@
+// lib/main.dart
+import 'dart:async';
+import 'dart:convert';
+import 'dart:html' as html; // for web download
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:m_rashid/users_interface/About_me.dart';
+import 'package:m_rashid/users_interface/Contact.dart';
+import 'package:m_rashid/users_interface/Projects.dart';
+import 'package:m_rashid/users_interface/experience.dart';
+import 'package:m_rashid/users_interface/header.dart';
+
+// theme & sections
+import 'theme/app_colors.dart';
+import 'theme/app_text_styles.dart';
+
 
 void main() {
-  runApp(const MyApp());
+  runApp(const PortfolioApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PortfolioApp extends StatelessWidget {
+  const PortfolioApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: "Muhammad Rashid — Portfolio",
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: AppColors.surface,
+        textTheme: AppTextStyles.textTheme,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const PortfolioHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class PortfolioHomePage extends StatefulWidget {
+  const PortfolioHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<PortfolioHomePage> createState() => _PortfolioHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _PortfolioHomePageState extends State<PortfolioHomePage> {
+  final ScrollController _scrollController = ScrollController();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+  // roles rotating
+  final List<String> _roles = [
+    "Flutter Developer",
+    "Android Developer",
+    "iOS Developer",
+    "UI Engineer",
+    "Mobile Engineer"
+  ];
+  int _roleIndex = 0;
+  Timer? _roleTimer;
+
+  // contact form controllers (passed down to contact section)
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+
+  // EmailJS placeholders
+  static const String emailJsServiceId = 'YOUR_SERVICE_ID';
+  static const String emailJsTemplateId = 'YOUR_TEMPLATE_ID';
+  static const String emailJsUserId = 'YOUR_PUBLIC_KEY';
+
+  // hover states (for header actions)
+  bool _isHoveringHire = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _roleTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      setState(() => _roleIndex = (_roleIndex + 1) % _roles.length);
     });
   }
 
   @override
+  void dispose() {
+    _roleTimer?.cancel();
+    _scrollController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  // EmailJS send (used by Contact section via callback)
+  Future<void> sendEmailJS({
+    required String name,
+    required String email,
+    required String message,
+  }) async {
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    final body = json.encode({
+      'service_id': emailJsServiceId,
+      'template_id': emailJsTemplateId,
+      'user_id': emailJsUserId,
+      'template_params': {
+        'from_name': name,
+        'from_email': email,
+        'message': message,
+      }
+    });
+
+    try {
+      final res = await http.post(url, headers: {
+        'origin': 'http://localhost',
+        'Content-Type': 'application/json',
+      }, body: body);
+
+      if (res.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('✅ Message sent successfully')),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('❌ Failed to send message')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('❌ Error sending message')),
+        );
+      }
+    }
+  }
+
+  // scroll to section helper
+  void scrollTo(GlobalKey key) {
+    // we use context & RenderObject to bring into view
+    final ctx = key.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(ctx,
+          duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+    }
+  }
+
+  // keys for sections
+  final GlobalKey headerKey = GlobalKey();
+  final GlobalKey aboutKey = GlobalKey();
+  final GlobalKey projectsKey = GlobalKey();
+  final GlobalKey experienceKey = GlobalKey();
+  final GlobalKey contactKey = GlobalKey();
+
+  // Download CV action
+  void _downloadCV() {
+    const cvAsset = 'assets/MuhammadRashidCV.pdf';
+    if (kIsWeb) {
+      html.AnchorElement(href: cvAsset)
+        ..download = 'Muhammad_Rashid_CV.pdf'
+        ..click();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('📄 CV download (mobile/desktop) - use file manager to save.')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    final width = MediaQuery.of(context).size.width;
+    final isWide = width > 900;
+
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      body: Column(
+        children: [
+          // Header (pass keys and callbacks)
+          Header(
+            key: headerKey,
+            onNavTap: (section) {
+              if (section == 'about') scrollTo(aboutKey);
+              if (section == 'projects') scrollTo(projectsKey);
+              if (section == 'experience') scrollTo(experienceKey);
+              if (section == 'contact') scrollTo(contactKey);
+            },
+            onHireTap: () => scrollTo(contactKey),
+            onDownload: _downloadCV,
+            isWide: isWide,
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // HERO / ABOUT
+                  AboutSection(
+                    key: aboutKey,
+                    roles: _roles,
+                    roleIndex: _roleIndex,
+                    onDownloadCV: _downloadCV,
+                    onContactTap: () => scrollTo(contactKey),
+                  ),
+
+                  // Projects
+                  ProjectsSection(
+                    key: projectsKey,
+                    onOpenProject: (title) {
+                      // placeholder for opening a modal or url
+                      if (kDebugMode) print('Open project: $title');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Open project: $title')),
+                      );
+                    },
+                  ),
+
+                  // Experience
+                  ExperienceSection(key: experienceKey),
+
+                  // Contact (passes form controllers and send callback)
+                  ContactSection(
+                    key: contactKey,
+                    formKey: _formKey,
+                    nameController: _nameController,
+                    emailController: _emailController,
+                    messageController: _messageController,
+                    onSend: (name, email, message) =>
+                        sendEmailJS(name: name, email: email, message: message),
+                  ),
+
+                  const SizedBox(height: 48),
+                  // footer
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 28.0),
+                      child: Text(
+                        '© ${DateTime.now().year} Muhammad Rashid — All rights reserved',
+                        style: AppTextStyles.caption,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
