@@ -122,6 +122,7 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
             const SnackBar(content: Text('✅ Message sent successfully')),
           );
         }
+        // fields reset
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

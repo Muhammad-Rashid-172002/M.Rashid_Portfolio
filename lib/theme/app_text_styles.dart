@@ -10,14 +10,14 @@ class AppTextStyles {
     fontWeight: FontWeight.w700,
     color: AppColors.text,
   );
-
+// Subtitle style
   static TextStyle subtitle = GoogleFonts.poppins(
     fontSize: 15,
     color: AppColors.muted,
     height: 1.6,
     fontWeight: FontWeight.w400,
   );
-
+// Button text style
   static TextStyle button = GoogleFonts.poppins(
     fontSize: 15,
     fontWeight: FontWeight.w600,

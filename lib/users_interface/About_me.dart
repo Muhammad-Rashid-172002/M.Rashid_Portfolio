@@ -84,6 +84,7 @@ class AboutSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
+        // descriptive text
         Text(
           "I build production-grade mobile & web apps using Flutter. Experienced in cross-platform UI, Firebase integration, REST APIs, and deploying responsive web apps.",
           style: AppTextStyles.subtitle,
@@ -119,6 +120,7 @@ class AboutSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 18),
+        // social icons
         Wrap(
           spacing: 12,
           children: [

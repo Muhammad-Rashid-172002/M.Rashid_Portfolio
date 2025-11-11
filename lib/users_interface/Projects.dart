@@ -113,7 +113,7 @@ class ProjectsSection extends StatelessWidget {
     );
   }
 }
-
+// Individual project card widget
 class _ProjectCard extends StatefulWidget {
   final String title, subtitle, imageAsset, description;
   final VoidCallback onOpen;
@@ -128,7 +128,7 @@ class _ProjectCard extends StatefulWidget {
   @override
   State<_ProjectCard> createState() => _ProjectCardState();
 }
-
+// State for hover effect
 class _ProjectCardState extends State<_ProjectCard> {
   bool _hover = false;
   @override

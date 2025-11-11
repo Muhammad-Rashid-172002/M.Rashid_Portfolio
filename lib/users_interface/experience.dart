@@ -8,6 +8,7 @@ class ExperienceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sample experience data
     final experiences = [
       {
         'role': 'Mobile App Developer',
@@ -57,6 +58,7 @@ class _ExperienceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Experience card UI
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,

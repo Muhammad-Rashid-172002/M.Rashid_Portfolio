@@ -1,6 +1,6 @@
 // lib/theme/app_colors.dart
 import 'package:flutter/material.dart';
-
+// Define color palette used throughout the app
 class AppColors {
   static const Color primary = Color(0xFF4B6BFB); // electric blue
   static const Color secondaryAccent = Color(0xFF8E5AFF); // purple accent
